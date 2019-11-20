@@ -104,22 +104,38 @@ services:
     networks:
       - esnet
 
-  eshead:
-    image: mobz/elasticsearch-head:5
-    ports:
-      - 9100:9100
-    container_name: eshead
-    networks:
-      - esnet
-
   kibana:
     image: kibana:7.4.2
     container_name: kibana
     environment:
-      SERVER_NAME: kibana
-      ELASTICSEARCH_HOSTS: http://es-m1:9200
+      - SERVER_NAME=kibana
+      - ELASTICSEARCH_HOSTS=http://es-m1:9200
+      - XPACK_GRAPH_ENABLED=true
+      - TIMELION_ENABLED=true
+      - XPACK_MONITORING_COLLECTION_ENABLED="true"
     ports:
       - 5601:5601
+    networks:
+      - esnet
+
+  cerebro:
+    image: lmenezes/cerebro:0.8.5
+    container_name: cerebro
+    ports:
+      - "9000:9000"
+    command:
+      - -Dhosts.0.host=http://es-m1:9200
+    networks:
+      - esnet
+
+  logstash:
+    image: logstash:7.4.2
+    container_name: logstash
+    volumes:
+      - ./:/home/logstash:ro
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
     networks:
       - esnet
 
