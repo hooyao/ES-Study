@@ -1,0 +1,127 @@
+version: "2"
+services:
+  es-m1:
+    image: elasticsearch:7.4.2
+    container_name: es-m1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - node.name=es-m1
+      - discovery.seed_hosts=es-m2
+      - cluster.initial_master_nodes=es-m1,es-m2
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Origin
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - $HOME/DockerData/es-m1/data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+
+  es-m2:
+    image: elasticsearch:7.4.2
+    container_name: es-m2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - node.name=es-m2
+      - discovery.seed_hosts=es-m1
+      - cluster.initial_master_nodes=es-m1,es-m2
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Origin
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - $HOME/DockerData/es-m2/data:/usr/share/elasticsearch/data
+    ports:
+      - 9201:9200
+    networks:
+      - esnet
+
+  es-d1:
+    image: elasticsearch:7.4.2
+    container_name: es-d1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - node.name=es-d1
+      - discovery.seed_hosts=es-m1
+      - cluster.initial_master_nodes=es-m1,es-m2
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Origin
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - $HOME/DockerData/es-d1/data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  es-d2:
+    image: elasticsearch:7.4.2
+    container_name: es-d2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - node.name=es-d2
+      - discovery.seed_hosts=es-m2
+      - cluster.initial_master_nodes=es-m1,es-m2
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-methods=OPTIONS,HEAD,GET,POST,PUT,DELETE
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization,Access-Control-Allow-Origin
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    mem_limit: 1g
+    volumes:
+      - $HOME/DockerData/es-d2/data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  eshead:
+    image: mobz/elasticsearch-head:5
+    ports:
+      - 9100:9100
+    container_name: eshead
+    networks:
+      - esnet
+
+  kibana:
+    image: kibana:7.4.2
+    container_name: kibana
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: http://es-m1:9200
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+
+networks:
+  esnet:
